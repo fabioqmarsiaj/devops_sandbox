@@ -1,0 +1,26 @@
+---
+- name: Install go
+  unarchive:
+    src: https://dl.google.com/go/go1.13.3.linux-amd64.tar.gz
+    dest: /usr/local
+    remote_src: yes
+
+- name: Setting go variables
+  lineinfile:
+    dest: $HOME/.bashrc
+    line: export PATH=$PATH:/usr/local/go/bin
+    insertafter: EOF
+
+- name: Update enviroment variables
+  raw: . $HOME/.bashrc
+
+- name: Copy calculator.go to ec2 aws
+  copy:
+    src: calculator.go
+    dest: /usr/local/calculator.go
+
+- name: Install Mux package
+  raw: /usr/local/go/bin/go get -u github.com/gorilla/mux
+
+- name: Build Go
+  raw: /usr/local/go/bin/go build /usr/local/calculator.go

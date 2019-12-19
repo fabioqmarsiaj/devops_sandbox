@@ -1,0 +1,10 @@
+pipeline {
+   agent any
+    stages {
+        stage('Run container') {
+            steps {
+		sh 'docker run -d -p 8082:5000 tema12:latest'
+            }
+        }
+    }
+}

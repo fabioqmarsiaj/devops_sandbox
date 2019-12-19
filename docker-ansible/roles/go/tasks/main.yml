@@ -1,0 +1,31 @@
+---
+- hosts: all
+  gather_facts: no
+
+  pre_tasks:
+    - name: apk update
+      raw: apk update
+    - name: install go
+      raw: apk add --no-cache git make musl-dev go
+
+  tasks:
+    - name: Setting go variables GOPATH and GOROOT
+      blockinfile:
+        dest: "$HOME/.bashrc"
+        block: |
+          export GOROOT=/usr/lib/go/bin
+          export GOPATH=/go
+          export PATH=/go/bin:$PATH
+        insertafter: EOF
+        create: yes
+
+    - name: Copy calculator.go to docker container
+      copy:
+        src: ../../../calculator.go
+        dest: /usr/local/calculator.go
+
+    - name: Install Mux package
+      raw: go get -u github.com/gorilla/mux
+
+    - name: Build Go
+      raw: go build /usr/local/calculator.go

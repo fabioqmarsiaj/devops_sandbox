@@ -1,0 +1,11 @@
+
+pipeline {
+   agent any
+    stages {
+        stage('Packer build') {
+            steps {
+		sh 'cd 3-devops/fabio-marsiaj/Tema12/tasks/bake/ && packer build build.json'
+            }
+        }
+    }
+}

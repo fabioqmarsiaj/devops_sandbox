@@ -1,0 +1,88 @@
+---
+- name: Install | Download the Go tarball
+  become: yes
+  unarchive:
+    src: https://dl.google.com/go/go1.13.1.linux-amd64.tar.gz
+    dest: /usr/local
+    remote_src: yes
+
+- name: Creating Go Home Directory
+  become: yes
+  file:
+    path: "{{item}}"
+    state: directory
+    owner: vagrant
+    group: vagrant
+    mode: 0775
+  with_items:
+    - "/usr/local/go"
+    - "/usr/local/go/bin"
+
+- name: Setting go variables GOPATH and GOROOT
+  become: yes
+  blockinfile:
+    dest: ".bashrc"
+    block: |
+      export GOPATH=$HOME/go
+      export GOBIN=$GOPATH/bin
+      export PATH=$GOBIN:$PATH:/usr/local/go/bin
+    insertafter: EOF
+    create: yes
+    mode: a+x
+
+- name: Creating script to build and run Go
+  become: yes
+  file:
+    path: go.sh
+    state: touch
+    remote_src: yes
+
+- name: Install Git
+  become: yes
+  apt:
+    name: git
+    state: present
+
+- name: Setting script cod
+  become: yes
+  blockinfile:
+    dest: "go.sh"
+    block: |
+      #!/bin/sh
+      /usr/local/go/bin/go get -u github.com/gorilla/mux
+      /usr/local/go/bin/go build calculator.go
+      ./calculator
+    insertafter: EOF
+    create: yes
+    remote_src: yes
+
+- name: Creating script to check status
+  become: yes
+  file:
+    path: check-service.sh
+    state: touch
+    remote_src: yes
+
+- name: Setting check-service script
+  become: yes
+  blockinfile:
+    dest: "check-service.sh"
+    block: |
+      #!/bin/sh
+      if pgrep calculator
+      then
+        echo "Container UP"
+      else
+        echo "Container DOWN"
+      fi
+    insertafter: EOF
+    create: yes
+    remote_src: yes
+
+- name: Give script check-service permission
+  become: yes
+  shell: chmod +x check-service.sh
+
+- name: Give script permission
+  become: yes
+  shell: chmod +x go.sh

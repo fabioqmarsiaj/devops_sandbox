@@ -1,0 +1,25 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure(2) do |config|
+
+    config.vm.box = "ubuntu/trusty64"
+
+    config.vm.network "private_network", ip: "99.99.99.9"
+
+    config.vm.provision "file", source: "Vagrantfile", destination: "$HOME"
+
+    config.vm.provision "ansible" do |ansible|
+        ansible.verbose = "v"
+        ansible.playbook = "central.yml"
+    end
+
+    config.vm.provision "file", source: "calculator.go", destination: "calculator.go"
+
+    config.trigger.after :up do |trigger|
+        trigger.name = "Executing go script"
+        trigger.run_remote = {inline: "./go.sh"}
+        trigger.info = "Vagrant is up and running."
+    end
+
+end
